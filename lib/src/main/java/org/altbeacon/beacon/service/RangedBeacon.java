@@ -74,9 +74,12 @@ public class RangedBeacon implements Serializable {
         // Filter out unreasonable values per
         // http://stackoverflow.com/questions/30118991/rssi-returned-by-altbeacon-library-127-messes-up-distance
         if (rssi != 127) {
-            mTracked = true;
-            lastTrackedTimeMillis = SystemClock.elapsedRealtime();
-            getFilter().addMeasurement(rssi);
+            RssiFilter filter = getFilter();
+            if (filter != null) {
+                mTracked = true;
+                lastTrackedTimeMillis = SystemClock.elapsedRealtime();
+                filter.addMeasurement(rssi);
+            }
         }
     }
 
@@ -106,10 +109,10 @@ public class RangedBeacon implements Serializable {
         if (mFilter == null) {
             //set RSSI filter
             try {
-            Constructor cons = BeaconManager.getRssiFilterImplClass().getConstructors()[0];
+                Constructor cons = BeaconManager.getRssiFilterImplClass().getConstructors()[0];
                 mFilter = (RssiFilter)cons.newInstance();
             } catch (Exception e) {
-                LogManager.e(TAG, "Could not construct RssiFilterImplClass %s", BeaconManager.getRssiFilterImplClass().getName());
+                LogManager.e(TAG, "Could not construct RssiFilterImplClass %s: %s", BeaconManager.getRssiFilterImplClass().getName(), e.toString());
             }
         }
         return mFilter;
