@@ -53,10 +53,11 @@ public class RangedBeacon implements Serializable {
 
     // Done at the end of each cycle before data are sent to the client
     public void commitMeasurements() {
-         if (!getFilter().noMeasurementsAvailable()) {
-             double runningAverage = getFilter().calculateRssi();
+        RssiFilter filter = getFilter();
+        if (filter != null && !filter.noMeasurementsAvailable()) {
+             double runningAverage = filter.calculateRssi();
              mBeacon.setRunningAverageRssi(runningAverage);
-             mBeacon.setRssiMeasurementCount(getFilter().getMeasurementCount());
+             mBeacon.setRssiMeasurementCount(filter.getMeasurementCount());
              LogManager.d(TAG, "calculated new runningAverageRssi: %s", runningAverage);
         }
         else {
@@ -94,7 +95,8 @@ public class RangedBeacon implements Serializable {
     }
 
     public boolean noMeasurementsAvailable() {
-        return getFilter().noMeasurementsAvailable();
+        RssiFilter filter = getFilter();
+        return filter == null || filter.noMeasurementsAvailable();
     }
 
     public long getTrackingAge() {
@@ -109,9 +111,8 @@ public class RangedBeacon implements Serializable {
         if (mFilter == null) {
             //set RSSI filter
             try {
-                throw new Exception("Hi There!");
-//                Constructor cons = BeaconManager.getRssiFilterImplClass().getConstructors()[0];
-//                mFilter = (RssiFilter)cons.newInstance();
+                Constructor cons = BeaconManager.getRssiFilterImplClass().getConstructors()[0];
+                mFilter = (RssiFilter)cons.newInstance();
             } catch (Exception e) {
                 LogManager.e(TAG, "Could not construct RssiFilterImplClass %s: %s", BeaconManager.getRssiFilterImplClass().getName(), e.toString());
             }
